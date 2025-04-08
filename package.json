@@ -25,6 +25,7 @@
   "dependencies": {
     "@point-of-sale/receipt-printer-encoder": "^3.0.2",
     "@point-of-sale/system-receipt-printer": "^2.0.1",
+    "axios": "^1.8.4",
     "dotenv": "^16.4.7",
     "esc-pos-encoder": "^3.0.0",
     "express": "^5.1.0",

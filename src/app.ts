@@ -7,6 +7,7 @@ import ReceiptPrinterEncoder from "@point-of-sale/receipt-printer-encoder";
 import SystemReceiptPrinter from "@point-of-sale/system-receipt-printer";
 import sharp from "sharp";
 import path from "path";
+import axios from "axios";
 
 const app = express();
 const encoder = new ReceiptPrinterEncoder({
@@ -17,6 +18,25 @@ app.use(express.json());
 
 app.get("/", (req, res) => {
 	res.send("This app is running!");
+});
+
+app.post("/", (req, res) => {
+	let ticketDetails = req.body;
+
+	axios("https://d4ba-102-219-210-222.ngrok-free.app/print", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		data: ticketDetails,
+	}).then(async (response) => {
+		if (response.status === 200) {
+			res.status(200).json({ message: "Ticket printed successfully" });
+		} else {
+			console.log(await response.data);
+			res.status(500).json({ message: "Failed to print ticket" });
+		}
+	});
 });
 
 app.get("/get-printers", (req, res) => {
