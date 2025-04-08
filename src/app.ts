@@ -23,6 +23,8 @@ app.get("/", (req, res) => {
 app.post("/", (req, res) => {
 	let ticketDetails = req.body;
 
+	console.log(ticketDetails);
+
 	axios("https://d4ba-102-219-210-222.ngrok-free.app/print", {
 		method: "POST",
 		headers: {
