@@ -30,7 +30,7 @@ app.post("/", (req, res) => {
 		headers: {
 			"Content-Type": "application/json",
 		},
-		data: ticketDetails,
+		data: { ...ticketDetails },
 	}).then(async (response) => {
 		if (response.status === 200) {
 			res.status(200).json({ message: "Ticket printed successfully" });
