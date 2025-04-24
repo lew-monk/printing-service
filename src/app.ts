@@ -7,7 +7,6 @@ import ReceiptPrinterEncoder from "@point-of-sale/receipt-printer-encoder";
 import SystemReceiptPrinter from "@point-of-sale/system-receipt-printer";
 import sharp from "sharp";
 import path from "path";
-import axios from "axios";
 
 const app = express();
 const encoder = new ReceiptPrinterEncoder({
@@ -20,27 +19,6 @@ app.get("/", (req, res) => {
 	res.send("This app is running!");
 });
 
-app.post("/", (req, res) => {
-	let ticketDetails = req.body;
-
-	console.log(ticketDetails);
-
-	axios("https://d4ba-102-219-210-222.ngrok-free.app/print", {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-		},
-		data: { ...ticketDetails },
-	}).then(async (response) => {
-		if (response.status === 200) {
-			res.status(200).json({ message: "Ticket printed successfully" });
-		} else {
-			console.log(await response.data);
-			res.status(500).json({ message: "Failed to print ticket" });
-		}
-	});
-});
-
 app.get("/get-printers", (req, res) => {
 	let printer = new Printer();
 	let printers = printer.printers;
@@ -50,6 +28,9 @@ app.get("/get-printers", (req, res) => {
 app.post("/print", async (req, res) => {
 	let ticketDetails = req.body;
 	let customPrinter = new Printer();
+
+	let shopName = ticketDetails.ticketDetails.shopName;
+	let ticketResponse = ticketDetails.ticketDetails.ticketResponse;
 
 	customPrinter.printer = customPrinter.printers[0].name ?? "BIXOLON_SRP_E300";
 
@@ -69,7 +50,7 @@ app.post("/print", async (req, res) => {
 			.align("center")
 			.line("Karibu")
 			.align("center")
-			.line(ticketDetails.shopName)
+			.line(shopName)
 			.rule({ style: "double" })
 			.line(
 				`Date: ${new Date().toLocaleDateString()} \n Arrival Time: ${new Date().toLocaleTimeString()}`,
@@ -80,7 +61,7 @@ app.post("/print", async (req, res) => {
 			.align("center")
 			.size(3, 3)
 			.bold()
-			.line(ticketDetails.ticketResponse["ticket_number"])
+			.line(ticketResponse["ticket_number"])
 			.align("center")
 			.bold(false)
 			.size(1, 1)
@@ -93,7 +74,7 @@ app.post("/print", async (req, res) => {
 			.line("Thank you for visiting  us")
 			.line("Scan the QR code to provide feedback")
 			.qrcode(
-				`${NPS_URL}?shopName=${ticketDetails.shopName}&sid=${ticketDetails.ticketResponse["ship_id"]}&shopType=retail`,
+				`${NPS_URL}?shopName=${ticketDetails.shopName}&sid=${ticketDetails.ticketResponse["shop_id"]}&shopType=retail`,
 			)
 			.cut()
 			.encode();
