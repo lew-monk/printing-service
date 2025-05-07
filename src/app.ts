@@ -7,6 +7,19 @@ import ReceiptPrinterEncoder from "@point-of-sale/receipt-printer-encoder";
 import SystemReceiptPrinter from "@point-of-sale/system-receipt-printer";
 import sharp from "sharp";
 import path from "path";
+import fs from "fs";
+import os from "os";
+
+function extractSnapshotAsset(assetRelativePath: string) {
+	const srcPath = path.join(__dirname, assetRelativePath);
+	const tempPath = path.join(os.tmpdir(), path.basename(assetRelativePath));
+
+	if (!fs.existsSync(tempPath)) {
+		fs.copyFileSync(srcPath, tempPath);
+	}
+
+	return tempPath;
+}
 
 const app = express();
 const encoder = new ReceiptPrinterEncoder({
@@ -34,7 +47,7 @@ app.post("/print", async (req, res) => {
 
 	customPrinter.printer = customPrinter.printers[0].name ?? "BIXOLON_SRP_E300";
 
-	const imagePath = path.join(__dirname, "assets", "images", "saf-logo.png");
+	const imagePath = extractSnapshotAsset("/assets/images/saf-logo.png");
 
 	const NPS_URL = "https://eflow-nps.safaricom.co.ke/";
 
@@ -74,7 +87,7 @@ app.post("/print", async (req, res) => {
 			.line("Thank you for visiting  us")
 			.line("Scan the QR code to provide feedback")
 			.qrcode(
-				`${NPS_URL}?shopName=${ticketDetails.shopName}&sid=${ticketDetails.ticketResponse["shop_id"]}&shopType=retail`,
+				`${NPS_URL}?shopName=${ticketDetails.shopName}&sid=${ticketResponse.shop_id}&shopType=retail`,
 			)
 			.cut()
 			.encode();

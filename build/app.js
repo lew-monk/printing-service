@@ -19,6 +19,16 @@ const find_printer_1 = __importDefault(require("./utils/find-printer"));
 const receipt_printer_encoder_1 = __importDefault(require("@point-of-sale/receipt-printer-encoder"));
 const sharp_1 = __importDefault(require("sharp"));
 const path_1 = __importDefault(require("path"));
+const fs_1 = __importDefault(require("fs"));
+const os_1 = __importDefault(require("os"));
+function extractSnapshotAsset(assetRelativePath) {
+    const srcPath = path_1.default.join(__dirname, assetRelativePath);
+    const tempPath = path_1.default.join(os_1.default.tmpdir(), path_1.default.basename(assetRelativePath));
+    if (!fs_1.default.existsSync(tempPath)) {
+        fs_1.default.copyFileSync(srcPath, tempPath);
+    }
+    return tempPath;
+}
 const app = (0, express_1.default)();
 const encoder = new receipt_printer_encoder_1.default({
     feedBeforeCut: 4,
@@ -39,7 +49,7 @@ app.post("/print", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     let shopName = ticketDetails.ticketDetails.shopName;
     let ticketResponse = ticketDetails.ticketDetails.ticketResponse;
     customPrinter.printer = (_a = customPrinter.printers[0].name) !== null && _a !== void 0 ? _a : "BIXOLON_SRP_E300";
-    const imagePath = path_1.default.join(__dirname, "assets", "images", "saf-logo.png");
+    const imagePath = extractSnapshotAsset("/assets/images/saf-logo.png");
     const NPS_URL = "https://eflow-nps.safaricom.co.ke/";
     let buffer = yield (0, sharp_1.default)(imagePath)
         .raw()
@@ -74,7 +84,7 @@ app.post("/print", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             .newline()
             .line("Thank you for visiting  us")
             .line("Scan the QR code to provide feedback")
-            .qrcode(`${NPS_URL}?shopName=${ticketDetails.shopName}&sid=${ticketDetails.ticketResponse["shop_id"]}&shopType=retail`)
+            .qrcode(`${NPS_URL}?shopName=${ticketDetails.shopName}&sid=${ticketResponse.shop_id}&shopType=retail`)
             .cut()
             .encode();
         // @ts-ignore
