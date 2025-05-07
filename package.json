@@ -44,5 +44,17 @@
     "esc-pos-encoder": "^3.0.0",
     "express": "^5.1.0",
     "sharp": "^0.33.5"
+  },
+  "pnpm": {
+    "supportedArchitectures": {
+      "os": [
+        "darwin",
+        "win32"
+      ],
+      "cpu": [
+        "arm64",
+        "x64"
+      ]
+    }
   }
 }
