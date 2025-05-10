@@ -3,32 +3,20 @@ import { errorHandler } from "./middlewares/errorHander";
 import Printer from "./utils/find-printer";
 // @ts-ignore
 import ReceiptPrinterEncoder from "@point-of-sale/receipt-printer-encoder";
-// @ts-ignore
-import SystemReceiptPrinter from "@point-of-sale/system-receipt-printer";
 import sharp from "sharp";
-import path from "path";
-import fs from "fs";
-import os from "os";
+import Logo from "./assets/logo";
 
-function extractSnapshotAsset(assetRelativePath: string) {
-	const srcPath = path.join(__dirname, assetRelativePath);
-	const tempPath = path.join(os.tmpdir(), path.basename(assetRelativePath));
-
-	if (!fs.existsSync(tempPath)) {
-		fs.copyFileSync(srcPath, tempPath);
-	}
-
-	return tempPath;
-}
+const imageBuffer = Buffer.from(Logo);
 
 const app = express();
+
 const encoder = new ReceiptPrinterEncoder({
 	feedBeforeCut: 4,
 });
 
 app.use(express.json());
 
-app.get("/", (req, res) => {
+app.get("/health-check", (req, res) => {
 	res.send("This app is running!");
 });
 
@@ -38,7 +26,7 @@ app.get("/get-printers", (req, res) => {
 	res.status(200).json({ ...printers });
 });
 
-app.post("/print", async (req, res) => {
+app.post("/", async (req, res) => {
 	let ticketDetails = req.body;
 	let customPrinter = new Printer();
 
@@ -47,11 +35,9 @@ app.post("/print", async (req, res) => {
 
 	customPrinter.printer = customPrinter.printers[0].name ?? "BIXOLON_SRP_E300";
 
-	const imagePath = extractSnapshotAsset("/assets/images/saf-logo.png");
-
 	const NPS_URL = "https://eflow-nps.safaricom.co.ke/";
 
-	let buffer = await sharp(imagePath)
+	let buffer = await sharp(imageBuffer)
 		.raw()
 		.toBuffer({ resolveWithObject: true });
 	try {
